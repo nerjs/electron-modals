@@ -1,1 +1,1 @@
-console.log('electron-modals', 'main process')
+module.exports = require('./lib/main_process')

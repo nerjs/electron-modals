@@ -1,1 +1,1 @@
-console.log('electron-modals', 'render process')
+module.exports = require('./lib/renderer_process')
