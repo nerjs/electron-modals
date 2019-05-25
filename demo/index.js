@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut } = require('electron')
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
 
@@ -36,6 +36,7 @@ app.on('ready', () => {
         }
     })
     
+    ipcMain.on('test', a => a.reply(123))
 
     win.loadURL(url.format({
         protocol: 'file:',
