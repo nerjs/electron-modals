@@ -1,2 +1,2 @@
 
-require('../../lib/child_electron_modals')
+window.em = require('../../lib/child_electron_modals')
