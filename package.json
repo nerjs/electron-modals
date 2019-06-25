@@ -22,7 +22,12 @@
   "dependencies": {
     "deep-diff": "^1.0.2",
     "electron": "^5.0.1",
-    "merge": "^1.2.1"
+    "electron-ebt": "^1.1.0",
+    "merge": "^1.2.1",
+    "nerjs-utils": "^0.1.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@jest-runner/electron": "^2.0.1",
+    "jest": "^24.8.0"
+  }
 }
