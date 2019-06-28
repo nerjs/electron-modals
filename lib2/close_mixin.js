@@ -7,7 +7,6 @@ const merge = require('merge')
 const { EBTEvent } = EBT
 
 const {
-    IS_OPEN_PROPS,
     IS_MODAL_PROPS,
     IS_START_CLOSED_PROPS,
     DEFAULT_EVENT_NAME_PROPS,
@@ -16,11 +15,8 @@ const {
     CLOSE_PREVENTED_CURRENT_TARGET_MESS,
     CLOSE_PREVENTED_ANOTHER_TARGET_MESS, 
     CLOSE_IN_PROGRESS_MESS,
-    OPEN_PRIVATE_EVENT,
     CLOSE_PRIVATE_EVENT,
-    CLOSE_TRANSFER_EVENT, 
     CLOSE_PREVENTED_EVENT,
-    OPEN_PUBLIC_EVENT,
     CLOSE_PUBLIC_EVENT,
     CLOSED_PUBLIC_EVENT,
     TIMEOUT_WAIT_CB, 
@@ -82,7 +78,6 @@ class CloseMixin extends EBT {
         super();
 
         this[IS_MODAL_PROPS] = !!isModal
-        this[IS_OPEN_PROPS] = false
         this[IS_START_CLOSED_PROPS] = false
         this[DEFAULT_EVENT_NAME_PROPS] = name;
 
@@ -96,9 +91,6 @@ class CloseMixin extends EBT {
         return this[IS_MODAL_PROPS]
     }
 
-    get isOpen() {
-        return this[IS_OPEN_PROPS]
-    }
 
     get isStartClosed() {
         return this[IS_START_CLOSED_PROPS]
