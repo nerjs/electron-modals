@@ -4,7 +4,6 @@ const ipcMain = require('nerjs-utils/electron/ipc_main')
 const openWinScript = require('nerjs-utils/electron/tests/open_win_script')
 const asyncSending = require('nerjs-utils/electron/tests/async_sending')
 const asyncListener = require('nerjs-utils/core/tests/async_listener')
-const IpcFalse = require('nerjs-utils/electron/tests/ipc_false')
 const sleep = require('nerjs-utils/core/sleep')
 const Mixin = require('../../lib/close_mixin')
 const TestWin = require('../common/win')
@@ -31,7 +30,7 @@ describe('Close mixin', () => {
         let mixin;
 
         mixin = new Mixin(true, 'test')
-
+        
         expect(mixin.isModal).toBeTruthy();
         expect(mixin[DEFAULT_EVENT_NAME_PROPS]).toBe('test');
         expect(mixin.timerOptions).toStrictEqual({

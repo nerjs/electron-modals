@@ -1,166 +1,214 @@
-const path = require('path')
-const CloseMixin = require('./close_mixin')
-const openWin = require('nerjs-utils/electron/open_win')
-const { defWinProps } = require('./utils/default_props')
-const setOptions = require('./utils/options')
+const { remote: { BrowserWindow, ipcMain, getCurrentWindow }} = require('electron')
 const merge = require('merge')
-const getPosition = require('./utils/pisition')
+const path = require('path')
 
-const {
-    /* PROPS NAMES */
-    IS_OPEN_PROPS,
-    IS_OPEN_IN_PROGRESS_PROPS,
-    IS_CLOSED_PROPS,
-    IS_MODAL_PROPS,
-    /* MESSAGES */
-    IS_START_CLOSED_PROPS,
-    DEFAULT_EVENT_NAME_PROPS,
-    WIN_UNDEFINED_MESS,
-    WEB_CONTENTS_UNDEFINED_MESS,
-    CLOSE_PREVENTED_CURRENT_TARGET_MESS,
-    CLOSE_PREVENTED_ANOTHER_TARGET_MESS, 
-    CLOSE_IN_PROGRESS_MESS,
-    WIN_IS_OPEN_MESS,
-    TEMPLATE_IS_REQUIRED_MESS,
-    /* EVENTS */
-    CLOSE_PRIVATE_EVENT,
-    CLOSE_PREVENTED_EVENT,
-    CLOSE_PUBLIC_EVENT,
-    CLOSED_PUBLIC_EVENT, 
-    /* TIMERS */
-    TIMEOUT_WAIT_CB, 
-    TIMEOUT_WAIT_CB_LONG,
-    TIMEOUT_OPEN_WIN
-} = require('./utils/constants')
+const setOptions = require('./utils/options')
+const EmProto = require('./em_proto')
+const OCEvents = require('./open_close_events')
+const openWindow = require('./utils/open_window')
 
-class ElectronModal extends CloseMixin {
+
+
+class ElectronModals extends OCEvents {
     constructor(name, props) {
-        if (typeof name != 'string') {
-            props = name
-            name = null
-        }
+        super();
 
-        if (typeof props != 'object' || Array.isArray(props)) {
-            props = {}
-        }
-
-        const options = setOptions({
-            modal: false,
-            icon: path.join(__dirname, 'files', 'modal_default.png'), 
-            template: null, 
-            position: {
-                width: 400,
-                height: 300,
-                center: true
-            },
-            confirmTimeout: TIMEOUT_WAIT_CB,
-            waitConfirmTimeout: TIMEOUT_WAIT_CB_LONG,
-            timeoutOpenWin: TIMEOUT_OPEN_WIN,
-            winOptions: defWinProps()
+        this.options = setOptions({
+            width: 400,
+            height: 300,
+            x: 200,
+            y: 200,
+            modal: false, 
+            timeoutOpen: 3000,
+            timeoutClose: 3000,
+            icon: path.join(__dirname, 'files', 'modal_default.png'),
+            winOptions: {
+                resizable: true,
+                movable: true, 
+                closable: true,
+                webPreferences: {
+                }
+            }
         })
-        options(props)
-        
-        const {
-            confirmTimeout, 
-            waitConfirmTimeout
-        } = options
 
-        super(false, name, { confirmTimeout, waitConfirmTimeout })
-
-        this.options = options
         this.data = setOptions({})
 
-        this[IS_OPEN_PROPS] = false
-        this[IS_OPEN_IN_PROGRESS_PROPS] = false
-        this[IS_CLOSED_PROPS] = false
-    }
+        this.eventName = `__em__:${getCurrentWindow().id}`
+        this.isOpen = false;
+        this.isClosed = false;
 
-    get isOpen() {
-        return !!this[IS_OPEN_PROPS]
-    }
-
-    get isOpenInProgress() {
-        return !!this[IS_OPEN_IN_PROGRESS_PROPS]
-    }
-
-    get isClosed() {
-        return !!this[IS_CLOSED_PROPS]
-    }
-
-
-    async open(template, curPosition, data, winProps) {
-        if (this.isOpen || this.isOpenInProgress) throw new Error(WIN_IS_OPEN_MESS)
-
-        if (typeof template != 'string') {
-            winProps = data 
-            data = curPosition 
-            curPosition = template 
-            template = this.options('template') || null
+        if (props && typeof props == 'object' && !Array.isArray(props)) {
+            this.options(props)
         }
 
-        if (!winProps || typeof winProps != 'object') {
-            winProps = {}
-        }
+        this.on('message',console.log)
+    } 
 
-        if (!data || typeof data != 'object') {
-            data = {}
-        }
-
-        if (!curPosition || typeof curPosition != 'object') {
-            curPosition = {}
-        }
-
-        if (!template) throw new Error(TEMPLATE_IS_REQUIRED_MESS) 
-
+    async openWindow() {
+        if (!this.options('path')) throw new Error('Template path is missing')
+        
         const {
-            icon,
-            modal, 
-            position,
-            timeoutOpenWin,
-            winOptions
+            width, 
+            height,
+            winOptions,
+            modal,
+            timeoutOpen
         } = this.options()
 
+        const opt = merge.recursive({
+            width, 
+            height,
+            // alwaysOnTop,
+            // skipTaskbar, 
+            // frame, 
+            // minimizable: false,
+            // show: false,
+            // autoHideMenuBar: !menuBar,
+            // type: 'desktop',
+            webPreferences: {
+                devTools: process.env.NODE_ENV != 'production',
+                nodeIntegration: true
+            }
+        }, winOptions)
 
-        const p = merge.recursive({}, 
-                                { icon }, 
-                                winOptions, 
-                                winProps, 
-                                { show: false }, 
-                                getPosition(merge({}, 
-                                                position, 
-                                                curPosition
-                                                )
-                                            )
-                                )
+        if (modal) {
+            opt.modal = true,
+            opt.parent = getCurrentWindow()
+        }
+
+
+        this.win = await openWindow(this.options('path'), opt, 1000)
+        return this.win
+    }
+
+    async open(data, opt) {
+        await this.setWinOptions(opt)
+        if (this.isOpen) {
+            if (!this.win) throw new Error('isOpen == true; BrowserWindow not found')
+            this.win.focus();
+            await this.setData(data)
+            return this;
+        } 
+        try {
+            const win = await this.openWindow()
+            this.eventName = win.id
+            this.initialize(win.webContents, ipcMain, this.eventName)
+            console.log(win.webContents, ipcMain, this.eventName)
+
+            const {
+                icon, 
+                modal
+            } = this.options()
+
+
+            if (icon && !modal) win.setIcon(icon)
+            win.show()
+            this.isOpen = true;
+            this.isClosed = false;
+            this.once('closed', () => {
+                this.win = null;
+                this.isOpen = false;
+                this.isClosed = true;
+            })
+            this.emit('open', win)
+        } catch(e) {
+            this.isClosed = true;
+            this.isOpen = false
+            this.emit('error', e)
+            console.error(e)
+            throw e;
+        }
+        await this.send('open', {
+            options: this.options(),
+            data: await this.setData(data)
+        })
+        return this;
+    }
+
+    async close(data) {
+        if (!this.isOpen || this.isClosed || !this.win) throw new Error('Unable to close the closed window')
         
-        this[IS_OPEN_IN_PROGRESS_PROPS] = true
+        const {
+            timeoutClose
+        } = this.options()
 
-        this.win = await openWin(template, p, timeoutOpenWin)
-        
-        this.initialize(this.win, this[DEFAULT_EVENT_NAME_PROPS] || `em:${this.win.id}`)
+        const event = new CloseEvent('em-close', {
+            cancelable: true
+        })
 
-        await this.setData(data)
+        event.modal = this.win 
 
-        this.win.show()
+        this.emit('close', event)
 
-        this.emit('open', this.win)
+        if (event.defaultPrevented) {
+            this.emit('close-prevented')
+            await this.send('close-prevented', {
+                options: this.options(),
+                data: await this.setData(data)
+            })
+            return this;
+        }
 
-        this[IS_OPEN_IN_PROGRESS_PROPS] = false
-        this[IS_OPEN_PROPS] = true
 
-        this.setCloseEvents()
+        await this.send('close', {
+            options: this.options(),
+            data: await this.setData(data)
+        })
+
+        try {
+            await (() => new Promise((resolve, reject) => {
+                let tid;
+
+                const closedHandler = () => {
+                    if (tid) {
+                        clearTimeout(tid)
+                        resolve()
+                    } 
+                }
+
+                this.win.once('closed', closedHandler)
+
+                tid = setTimeout(() => {
+                    if (this.isClosed || !tid) return;
+                    tid = null;
+                    this.win.removeListener('closed',closedHandler)
+                    reject(new Error(`Failed to confirm closing the window in the allotted time [${timeoutClose}]`))
+                }, timeoutClose)
+
+
+                this.win.close();
+
+            }))()
+        } catch (e) {
+            this.emit('close-error', e)
+            this.emit('error', e)
+            throw e
+        }
+
+
+        this.emit('closed')
+        return this;
     }
 
-    setCloseEvents() {
+    async setData(data) {
+        if (!this.checkInputs(data)) return false
 
     }
 
-    async setData() {
+    getData() {
 
     }
+
+    async setWinOptions(opt) {
+        if (!this.checkInputs(opt)) return false
+    }
+
+    checkInputs(obj) {
+        if (!obj || typeof obj != 'object' || Array.isArray(obj)) return false
+        if (!this.isOpen && this.isClosed) throw new Error('Window was closed')
+    }
+
 }
 
-ElectronModal.defWinProps = defWinProps
 
-
-module.exports = ElectronModal
+module.exports = ElectronModals

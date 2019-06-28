@@ -1,6 +1,6 @@
 const path = require('path')
 
-const EM = require('../../lib2/electron_modals')
+const EM = require('../../lib/electron_modals')
 const OCE = require('../../lib/close_mixin')
 const constants = require('../../lib/utils/constants')
 
