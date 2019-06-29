@@ -10,11 +10,12 @@ const constants = require('../../lib/utils/constants')
 
 const emc = new EMC()
 
+emc.on('close', e => alert(`close: ${e.initiator}`))
+emc.on('closed', e => alert(`closed: ${e.initiator}`))
 
-
-emc.on(constants.CLOSE_PRIVATE_EVENT, (e, d) => {
-    console.log('CLOSE_PRIVATE_EVENT:', constants.CLOSE_PRIVATE_EVENT)
-    console.log(e)
-    console.log(d)
-    console.log('*******************')
-})
+// emc.on(constants.CLOSE_PRIVATE_EVENT, (e, d) => {
+//     console.log('CLOSE_PRIVATE_EVENT:', constants.CLOSE_PRIVATE_EVENT)
+//     console.log(e)
+//     console.log(d)
+//     console.log('*******************')
+// })
