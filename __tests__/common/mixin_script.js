@@ -13,4 +13,6 @@ mixin.on('close', e => e.preventDefault())
 mixin.on('remove:prevent', () => mixin.removeAllListeners('close'))
 
 
-mixin.on('closed', () => mixin.send('confirm:closed'))
+mixin.on('move:confirm:close', () => {
+    mixin.once('close', () => mixin.send('confirm:close'))
+})

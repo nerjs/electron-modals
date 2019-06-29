@@ -175,12 +175,14 @@ describe('Close mixin', () => {
 
         setTimeout(() => mixin.close(), 2)
         await asyncListener(mixin, CLOSE_PRIVATE_EVENT)
-        await asyncListener(mixin, CLOSED_PUBLIC_EVENT)
+        // await asyncListener(mixin, CLOSED_PUBLIC_EVENT)
         await sleep(10)
 
-
+        await mixin.send('move:confirm:close')
         setTimeout(() => mixin.close(), 2)
-        await asyncListener(mixin, 'confirm:closed')
-        await asyncListener(mixin, CLOSED_PUBLIC_EVENT)
+        
+        await asyncListener(mixin, 'confirm:close')
+
+        await sleep(1000)
     });
 });
