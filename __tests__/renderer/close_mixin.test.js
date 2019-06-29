@@ -33,7 +33,7 @@ describe('Close mixin', () => {
         
         expect(mixin.isModal).toBeTruthy();
         expect(mixin[DEFAULT_EVENT_NAME_PROPS]).toBe('test');
-        expect(mixin.timerOptions).toStrictEqual({
+        expect(mixin.senderOptions).toStrictEqual({
             confirmTimeout: TIMEOUT_WAIT_CB,
             waitConfirmTimeout: TIMEOUT_WAIT_CB_LONG
         });
@@ -45,7 +45,7 @@ describe('Close mixin', () => {
 
         expect(!mixin.isModal).toBeTruthy();
         expect(mixin[DEFAULT_EVENT_NAME_PROPS]).toBe('test2');
-        expect(mixin.timerOptions).toStrictEqual( {
+        expect(mixin.senderOptions).toStrictEqual( {
             confirmTimeout: 123,
             waitConfirmTimeout: 321
         });
