@@ -20,7 +20,8 @@ const {
     CLOSE_PRIVATE_EVENT,
     CLOSED_PUBLIC_EVENT,
     CLOSE_PREVENTED_EVENT,
-    CLOSE_IN_PROGRESS_MESS
+    CLOSE_IN_PROGRESS_MESS,
+    CLOSE_BEFORE_OPEN_MESS
 } = require('../../lib')
 
 
@@ -99,7 +100,10 @@ describe('Close mixin', () => {
     });
 
     it('prevent default (is initiator)', async () => {
-        const mixin = new Mixin(true, 'test')
+        let mixin
+        mixin = new Mixin(true, `${Math.random()}`)
+        mixin.initialize()
+
         let res;
         
         mixin.once(CLOSE_PUBLIC_EVENT, e => e.preventDefault())
@@ -107,12 +111,18 @@ describe('Close mixin', () => {
 
         await expect(mixin.close()).rejects.toThrow(CLOSE_PREVENTED_CURRENT_TARGET_MESS)
         
-        setTimeout(() => mixin.close(), 10)
+        setTimeout(() => mixin.close(), 2)
         res = await asyncListener(mixin, CLOSE_PUBLIC_EVENT) 
         expect(res[0].initiator).toBe(true);
         
-        setTimeout(() => mixin.close(), 10)
+
+        mixin = new Mixin(true, `${Math.random()}`)
+        mixin.initialize()
+        
+        setTimeout(() => mixin.close(), 2)
+        
         mixin.once(CLOSE_PUBLIC_EVENT, e => e.preventDefault())
+    
         res = await asyncListener(mixin, CLOSE_PREVENTED_EVENT) 
         expect(res[0].initiator).toBe(true);
     });
@@ -137,13 +147,21 @@ describe('Close mixin', () => {
         await expect(mixin.close(true)).rejects.toThrow(CLOSE_PREVENTED_ANOTHER_TARGET_MESS)
     });
 
+    it('Close before open', async () => {
+        let mixin;
+        mixin = new Mixin(false)
+        await expect(mixin.close()).rejects.toThrow(CLOSE_BEFORE_OPEN_MESS)
+        mixin = new Mixin(true)
+        await expect(mixin.close()).rejects.toThrow(CLOSE_BEFORE_OPEN_MESS)
+    });
+
     it('Twice called method close()', async () => {
         const mixin = new Mixin(true, 'test')
         mixin.initialize();
 
         mixin.close()
 
-        await expect(mixin.close(true)).rejects.toThrow(CLOSE_IN_PROGRESS_MESS)
+        await expect(mixin.close()).rejects.toThrow(CLOSE_IN_PROGRESS_MESS)
     });
 
 

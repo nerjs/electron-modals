@@ -10,7 +10,7 @@ const template = path.join(__dirname, '..', 'common', 'open_test_template.html')
 
 const {
     TEMPLATE_IS_REQUIRED_MESS,
-    INITIAL_DATA_EVENT
+    WIN_IS_OPEN_MESS
 } = require('../../lib')
 
 describe('Open win', () => {
@@ -102,7 +102,7 @@ describe('Open win', () => {
     });
 
     it('Child', async () => {
-        em = new EM('test',{
+        const em = new EM('test',{
             template,
             winOptions: {
                 transparent: true
@@ -113,5 +113,18 @@ describe('Open win', () => {
         const [ e, d ] = await asyncListener(em, 'test1')
         expect(d.test).toEqual(1);
 
+    });
+
+    it('Twice called method open()', async () => {
+        const em = new EM('test',{
+            template,
+            winOptions: {
+                transparent: true
+            }
+        })
+
+        await em.open()
+
+        await expect(em.open()).rejects.toThrow(WIN_IS_OPEN_MESS)
     });
 });
