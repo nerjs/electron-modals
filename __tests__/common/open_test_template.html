@@ -7,6 +7,15 @@
     <title>Document</title>
 </head>
 <body>
-    
+    <script>
+        const EMC = require('../../lib/child_electron_modals')  
+        const emc = new EMC('test')  
+
+
+        emc.on('open', (e, d) => {
+            emc.send('test1', d)
+        })
+
+    </script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 const path = require('path')
 const { remote: { getCurrentWindow }} = require('electron')
+
+const asyncListener = require('nerjs-utils/core/tests/async_listener')
 const EM = require('../../lib/electron_modals')
 
 
@@ -7,7 +9,8 @@ const EM = require('../../lib/electron_modals')
 const template = path.join(__dirname, '..', 'common', 'open_test_template.html')
 
 const {
-    TEMPLATE_IS_REQUIRED_MESS
+    TEMPLATE_IS_REQUIRED_MESS,
+    INITIAL_DATA_EVENT
 } = require('../../lib')
 
 describe('Open win', () => {
@@ -22,35 +25,37 @@ describe('Open win', () => {
         em = new EM('test', {
             template, 
             winOptions: {
-                width: 200, 
+                width: 300, 
                 transparent: true,
-                center: false
+                center: false,
+                frame: false,
+                useContentSize: true
             }
         })
 
         await em.open({
-                height: 201
+                height: 400
             }, {}, {
-                x: 202,
-                y: 203
+                x: 500,
+                y: 600
             }) 
 
         const [ width, height ] = em.win.getSize() 
-        const [ x, y ] = em.win.getPosition()
+        // const [ x, y ] = em.win.getPosition()
 
 
 
         expect(em.eventName).toEqual('test');
-        expect(width).toEqual(200);
-        expect(height).toEqual(201);
-        expect(x).toEqual(202);
-        expect(y).toEqual(203);
+        expect(width).toEqual(300);
+        expect(height).toEqual(400);
+        // expect(x).toEqual(500);
+        // expect(y).toEqual(600);
         expect(em.win.isModal()).toEqual(false);
 
         em.win.close()
         
         
-        em = new EM({
+        em = new EM('test',{
             template,
             modal: true,
             winOptions: {
@@ -65,6 +70,48 @@ describe('Open win', () => {
 
         expect(em.win.isModal()).toEqual(true);
         expect(em.win.getParentWindow()).toEqual(getCurrentWindow());
-        expect(em.eventName).toEqual(`em:${em.win.id}`);
+
+
+        em.win.close()
+        
+        
+        em = new EM('test',{
+            template,
+            winOptions: {
+                transparent: true
+            }
+        })
+
+        setTimeout(()=>em.open({}, {test:1}), 2) 
+        const [e, d] = await asyncListener(em, `pre:open`)
+        expect(d.test).toBe(1);
+        
+        em.win.close()
+        em = new EM('test',{
+            template,
+            winOptions: {
+                transparent: true
+            }
+        })
+
+        setTimeout(()=>em.open({}, {test:1}), 2) 
+        const [e1] = await asyncListener(em, `open`)
+        expect(e1).toBe(em.win);
+
+        em.win.close()
+    });
+
+    it('Child', async () => {
+        em = new EM('test',{
+            template,
+            winOptions: {
+                transparent: true
+            }
+        })
+
+        setTimeout(()=>em.open({}, {test:1}), 2)
+        const [ e, d ] = await asyncListener(em, 'test1')
+        expect(d.test).toEqual(1);
+
     });
 });
