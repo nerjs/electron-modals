@@ -40,6 +40,7 @@ describe('Open win', () => {
 
 
 
+        expect(em.eventName).toEqual('test');
         expect(width).toEqual(200);
         expect(height).toEqual(201);
         expect(x).toEqual(202);
@@ -49,7 +50,7 @@ describe('Open win', () => {
         em.win.close()
         
         
-        em = new EM('test', {
+        em = new EM({
             template,
             modal: true,
             winOptions: {
@@ -64,5 +65,6 @@ describe('Open win', () => {
 
         expect(em.win.isModal()).toEqual(true);
         expect(em.win.getParentWindow()).toEqual(getCurrentWindow());
+        expect(em.eventName).toEqual(`em:${em.win.id}`);
     });
 });

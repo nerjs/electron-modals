@@ -1,4 +1,6 @@
+const { remote: { getCurrentWindow } } = require('electron')
 const EM = require('../../lib/electron_modals')
+const EMC = require('../../lib/child_electron_modals')
 
 
 const {
@@ -61,6 +63,32 @@ describe('Init EM', () => {
         expect(em.options().winOptions.width).toEqual(123);
         expect(em.options().winOptions.height).toEqual(321);
         expect(em.options().winOptions.webPreferences.testOption).toEqual(456);
+
+    });
+
+    it('Child init', () => {
+        let em;
+        em = new EMC('test')
+
+        expect(em[DEFAULT_EVENT_NAME_PROPS]).toEqual('test');
+
+
+        expect(em.eventName).toEqual('test');
+        expect(em.options().confirmTimeout).toEqual(TIMEOUT_WAIT_CB);
+        expect(em.options().waitConfirmTimeout).toEqual(TIMEOUT_WAIT_CB_LONG);
+
+        em = new EMC({
+            confirmTimeout: 1,
+            waitConfirmTimeout: 2
+        })
+
+
+
+
+        expect(em.eventName).toEqual(`em:${getCurrentWindow().id}`);
+        expect(em.options().confirmTimeout).toEqual(1);
+        expect(em.options().waitConfirmTimeout).toEqual(2);
+
 
     });
 });
