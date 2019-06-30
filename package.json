@@ -1,6 +1,6 @@
 {
   "name": "electron-modals",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Module for opening and managing windows from the process renderer",
   "main": "index.js",
   "scripts": {
