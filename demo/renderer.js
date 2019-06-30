@@ -11,17 +11,20 @@ const em = new EM({
     // menuBar: false
 })
 
+// const fs = require('fs') 
 
-em.on(constants.CLOSE_PRIVATE_EVENT, (e, d) => {
-    console.log('CLOSE_PRIVATE_EVENT:', constants.CLOSE_PRIVATE_EVENT)
-    console.log(e)
-    console.log(d)
-    console.log('*******************')
-})
 
-document.getElementById('b1').addEventListener('click', async () => {
-    await em.open()
-    window.em = em
-    window.oce = new OCE(false, 'test')
-    window.oce.initialize(em.win)
-})
+// const writef = name => {
+//     fs.writeFile(path.join(__dirname, 'z', `${name}.txt`), Date.now(), e => {
+//         if (e) alert(e.message)
+//     }) 
+// }
+
+// const getWrite = name => () => writef(name)
+
+
+// em.on(constants.CLOSE_PRIVATE_EVENT, getWrite('parent_CLOSE_PRIVATE_EVENT'))
+// em.on(constants.CLOSE_TRANSFER_EVENT, getWrite('parent_' + constants.CLOSE_TRANSFER_EVENT))
+
+// em.on(constants.CLOSE_PRIVATE_EVENT, () => alert(`CLOSE_PRIVATE_EVENT - ${Date.now()}`))
+// em.on(constants.CLOSE_TRANSFER_EVENT, () => alert(`${constants.CLOSE_TRANSFER_EVENT} - ${Date.now()}`))
