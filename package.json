@@ -24,7 +24,7 @@
     "electron": "^5.0.1",
     "electron-ebt": "^1.1.0",
     "merge": "^1.2.1",
-    "nerjs-utils": "^0.1.21"
+    "nerjs-utils": "^0.1.23"
   },
   "devDependencies": {
     "@jest-runner/electron": "^2.0.1",
