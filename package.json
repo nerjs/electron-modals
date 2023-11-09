@@ -21,7 +21,7 @@
   "homepage": "https://github.com/nerjs/electron-modals#readme",
   "dependencies": {
     "deep-diff": "^1.0.2",
-    "electron": "^5.0.1",
+    "electron": "^25.9.4",
     "electron-ebt": "^1.1.0",
     "merge": "^1.2.1",
     "nerjs-utils": "^0.1.21"
